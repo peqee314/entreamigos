@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Padel Tour - Gestión de Torneo</title>
+    <title>Torneo de Diego y German</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
@@ -62,12 +62,11 @@
         </section>
 
         <section id="zonas-container" class="space-y-16 border-t border-slate-800 pt-16">
-            </section>
+        </section>
     </main>
 
     <script>
         const resultadosCargados = {
-            // Ejemplo para probar: "A-0": [6,2, 6,3]
             "A-0": [3, 6, 5, 7],
             "B-1": [3, 6, 6, 0, 11, 9],
         };
@@ -87,24 +86,36 @@
             container.innerHTML = '';
 
             torneoData.forEach(zona => {
-                let stats = zona.teams.map(name => ({ name, pts: 0, diff: 0, played: 0 }));
+                // gDiff rastreará la diferencia de games
+                let stats = zona.teams.map(name => ({ name, pts: 0, sDiff: 0, gDiff: 0, played: 0 }));
                 const matchOrder = [[0,1], [1,2], [0,2]];
 
                 let matchesHtml = zona.matches.map((m, i) => {
                     const res = resultadosCargados[`${zona.id}-${i}`] || [];
                     const [p1, p2] = matchOrder[i];
                     
-                    // Si no hay resultado, mostramos el Día y Hora
                     let resHtml = `<span class="bg-slate-700/50 px-2 py-0.5 rounded text-[9px] text-slate-300 font-bold">${m.d} ${m.h}</span>`;
 
                     if (res.length >= 4) {
                         stats[p1].played++; stats[p2].played++;
+                        
+                        // Sets
                         let sets1 = (res[0]>res[1]?1:0) + (res[2]>res[3]?1:0) + (res[4]>res[5]?1:0);
                         let sets2 = (res[1]>res[0]?1:0) + (res[3]>res[2]?1:0) + (res[5]>res[4]?1:0);
                         
+                        // Games
+                        let games1 = (res[0]||0) + (res[2]||0) + (res[4]||0);
+                        let games2 = (res[1]||0) + (res[3]||0) + (res[5]||0);
+
                         if (sets1 > sets2) stats[p1].pts++; else stats[p2].pts++;
-                        stats[p1].diff += (sets1 - sets2);
-                        stats[p2].diff += (sets2 - sets1);
+                        
+                        // Diferencia Sets
+                        stats[p1].sDiff += (sets1 - sets2);
+                        stats[p2].sDiff += (sets2 - sets1);
+
+                        // Diferencia Games
+                        stats[p1].gDiff += (games1 - games2);
+                        stats[p2].gDiff += (games2 - games1);
                         
                         resHtml = `<span class="text-yellow-500 font-black text-[10px] tracking-widest">${res[0]}-${res[1]} ${res[2]}-${res[3]} ${res[4]?'('+res[4]+'-'+res[5]+')':''}</span>`;
                     }
@@ -119,7 +130,8 @@
                     </div>`;
                 }).join('');
 
-                stats.sort((a,b) => b.pts - a.pts || b.diff - a.diff);
+                // Ordenar: PTS > Dif Sets > Dif Games
+                stats.sort((a,b) => b.pts - a.pts || b.sDiff - a.sDiff || b.gDiff - a.gDiff);
                 
                 if (stats.every(s => s.played >= 2)) {
                     clasificados[zona.id + "1"] = stats[0].name;
@@ -140,13 +152,15 @@
                                 <tr class="bg-slate-800/80 text-slate-400 uppercase text-[9px] tracking-widest">
                                     <th class="p-3 text-left">Pareja</th>
                                     <th class="p-3">PTS</th>
-                                    <th class="p-3">DIF</th>
+                                    <th class="p-3">DS</th>
+                                    <th class="p-3">DG</th>
                                 </tr>
                                 ${stats.map((s, idx) => `
                                 <tr class="${idx<2?'text-white bg-yellow-500/5':'text-slate-500'}">
                                     <td class="p-3 border-t border-slate-800 font-semibold">${idx<2?'<span class="text-yellow-500 mr-1">★</span>':''}${s.name}</td>
                                     <td class="p-3 border-t border-slate-800 text-center font-bold">${s.pts}</td>
-                                    <td class="p-3 border-t border-slate-800 text-center">${s.diff > 0 ? '+'+s.diff : s.diff}</td>
+                                    <td class="p-3 border-t border-slate-800 text-center">${s.sDiff > 0 ? '+'+s.sDiff : s.sDiff}</td>
+                                    <td class="p-3 border-t border-slate-800 text-center">${s.gDiff > 0 ? '+'+s.gDiff : s.gDiff}</td>
                                 </tr>`).join('')}
                             </table>
                         </div>
