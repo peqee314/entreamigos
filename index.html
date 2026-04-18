@@ -186,30 +186,29 @@
         function renderBracket() {
     const getT = (key) => clasificados[key] || `<span class="text-slate-700 tracking-tighter italic text-[10px]">Esperando ${key}...</span>`;
 
-    // Repechajes
+    // Repechajes (HOY)
+    const badgeHoy = `<span class="text-[9px] bg-yellow-500/10 text-yellow-500 px-1.5 py-0.5 rounded font-bold">HOY 21:30hs</span>`;
+
     document.getElementById('slot-8vo-1').innerHTML = `
-        <div class="flex justify-between items-center mb-1">
-            <span class="text-[9px] bg-yellow-500/10 text-yellow-500 px-1.5 py-0.5 rounded font-bold">HOY 21:30hs</span>
-        </div>
+        <div class="flex justify-between items-center mb-1">${badgeHoy}</div>
         <div>${getT('B2')}</div>
         <div class="h-[1px] bg-slate-800 my-1"></div>
         <div>${getT('C2')}</div>`;
 
     document.getElementById('slot-8vo-2').innerHTML = `
-        <div class="flex justify-between items-center mb-1">
-            <span class="text-[9px] bg-yellow-500/10 text-yellow-500 px-1.5 py-0.5 rounded font-bold">HOY 21:30hs</span>
-        </div>
+        <div class="flex justify-between items-center mb-1">${badgeHoy}</div>
         <div>${getT('D2')}</div>
         <div class="h-[1px] bg-slate-800 my-1"></div>
         <div>${getT('A2')}</div>`;
 
-    // Cuartos de Final (Todos 14:30hs)
-    const badgeCuartos = `<span class="text-[9px] bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded font-bold ml-2">14:30hs</span>`;
+    // Cuartos de Final (MAÑANA 14:30hs)
+    // Cambiamos el estilo a uno un poco más neutro pero claro
+    const badgeManana = `<span class="text-[9px] bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded font-bold ml-2">MAÑANA 14:30hs</span>`;
 
     document.getElementById('slot-4to-1').innerHTML = `
         <div class="flex justify-between items-start mb-1">
             <div class="text-[10px] text-yellow-500 font-bold italic uppercase">1ero A vs Rep 1</div>
-            ${badgeCuartos}
+            ${badgeManana}
         </div>
         <div class="text-xs">${getT('A1')}</div>
         <div class="h-[1px] bg-slate-800 my-1"></div>
@@ -218,7 +217,7 @@
     document.getElementById('slot-4to-2').innerHTML = `
         <div class="flex justify-between items-start mb-1">
             <div class="text-[10px] text-yellow-500 font-bold italic uppercase">1ero E vs 1ero D</div>
-            ${badgeCuartos}
+            ${badgeManana}
         </div>
         <div class="text-xs">${getT('E1')}</div>
         <div class="h-[1px] bg-slate-800 my-1"></div>
@@ -227,7 +226,7 @@
     document.getElementById('slot-4to-3').innerHTML = `
         <div class="flex justify-between items-start mb-1">
             <div class="text-[10px] text-yellow-500 font-bold italic uppercase">1ero C vs 2do E</div>
-            ${badgeCuartos}
+            ${badgeManana}
         </div>
         <div class="text-xs">${getT('C1')}</div>
         <div class="h-[1px] bg-slate-800 my-1"></div>
@@ -236,14 +235,14 @@
     document.getElementById('slot-4to-4').innerHTML = `
         <div class="flex justify-between items-start mb-1">
             <div class="text-[10px] text-yellow-500 font-bold italic uppercase">1ero B vs Rep 2</div>
-            ${badgeCuartos}
+            ${badgeManana}
         </div>
         <div class="text-xs">${getT('B1')}</div>
         <div class="h-[1px] bg-slate-800 my-1"></div>
         <div class="text-xs text-slate-500 italic">Ganador Repechaje 2</div>`;
 
-    document.getElementById('slot-semi-1').innerHTML = `<div class="text-xs text-slate-500">Ganador 4tos (1-2)</div>`;
-    document.getElementById('slot-semi-2').innerHTML = `<div class="text-xs text-slate-500">Ganador 4tos (3-4)</div>`;
+    document.getElementById('slot-semi-1').innerHTML = `<div class="text-xs text-slate-500 italic text-center">Ganador 4tos (1-2)</div>`;
+    document.getElementById('slot-semi-2').innerHTML = `<div class="text-xs text-slate-500 italic text-center">Ganador 4tos (3-4)</div>`;
 }
         logic();
     </script>
