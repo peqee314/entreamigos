@@ -55,7 +55,6 @@
                 <div>
                     <p class="text-[10px] text-center font-bold text-yellow-500 uppercase tracking-widest mb-4">Gran Final</p>
                     <div class="glass p-6 rounded-2xl bg-yellow-500/10 border-yellow-500 shadow-2xl text-center" id="slot-final">
-                        <div class="text-sm font-bold text-slate-400">Por definir</div>
                     </div>
                 </div>
             </div>
@@ -66,22 +65,26 @@
     </main>
 
     <script>
+        // --- CARGA DE RESULTADOS GRUPOS ---
         const resultadosCargados = {
-            "A-0": [3, 6, 5, 7],
-            "B-1": [3, 6, 6, 0, 11, 9],
-            "D-0": [6, 4, 4, 6, 11, 9],
-            "D-1": [6, 2, 6, 7, 11, 6],
-            "C-1": [6, 1, 6, 0,],
-            "A-1": [6, 2, 7, 5,],
-            "A-2": [5, 7, 6, 1, 9, 11],
-            "B-0": [6, 3, 3, 6, 11, 2],
-            "C-2": [6, 1, 6, 1,],
-            "D-2": [7, 6, 6, 2],
-            "E-0": [5, 7, 4, 6],
-            "E-1": [6, 4, 6, 3],
-            "E-2": [2, 6, 2, 6],
-            "C-0": [6, 7, 4, 6],
-            "B-2": [7, 5, 6, 3],
+            "A-0": [3, 6, 5, 7], "B-1": [3, 6, 6, 0, 11, 9], "D-0": [6, 4, 4, 6, 11, 9],
+            "D-1": [6, 2, 6, 7, 11, 6], "C-1": [6, 1, 6, 0], "A-1": [6, 2, 7, 5],
+            "A-2": [5, 7, 6, 1, 9, 11], "B-0": [6, 3, 3, 6, 11, 2], "C-2": [6, 1, 6, 1],
+            "D-2": [7, 6, 6, 2], "E-0": [5, 7, 4, 6], "E-1": [6, 4, 6, 3],
+            "E-2": [2, 6, 2, 6], "C-0": [6, 7, 4, 6], "B-2": [7, 5, 6, 3],
+        };
+
+        // --- CARGA MANUAL DE GANADORES (Escribe el nombre aquí para avanzar de fase) ---
+        const ganadoresManuales = {
+            "rep1": "",      // Ganador Repechaje 1 -> Pasa a Cuartos 1
+            "rep2": "",      // Ganador Repechaje 2 -> Pasa a Cuartos 4
+            "cuartos1": "",  // Ganador Cuartos 1 -> Pasa a Semis 1
+            "cuartos2": "",  // Ganador Cuartos 2 -> Pasa a Semis 1
+            "cuartos3": "",  // Ganador Cuartos 3 -> Pasa a Semis 2
+            "cuartos4": "",  // Ganador Cuartos 4 -> Pasa a Semis 2
+            "semi1": "",     // Finalista 1
+            "semi2": "",     // Finalista 2
+            "campeon": ""    // Ganador Final
         };
 
         const torneoData = [
@@ -99,151 +102,71 @@
             container.innerHTML = '';
 
             torneoData.forEach(zona => {
-                // gDiff rastreará la diferencia de games
                 let stats = zona.teams.map(name => ({ name, pts: 0, sDiff: 0, gDiff: 0, played: 0 }));
                 const matchOrder = [[0,1], [1,2], [0,2]];
 
                 let matchesHtml = zona.matches.map((m, i) => {
                     const res = resultadosCargados[`${zona.id}-${i}`] || [];
                     const [p1, p2] = matchOrder[i];
-                    
                     let resHtml = `<span class="bg-slate-700/50 px-2 py-0.5 rounded text-[9px] text-slate-300 font-bold">${m.d} ${m.h}</span>`;
 
                     if (res.length >= 4) {
                         stats[p1].played++; stats[p2].played++;
-                        
-                        // Sets
                         let sets1 = (res[0]>res[1]?1:0) + (res[2]>res[3]?1:0) + (res[4]>res[5]?1:0);
                         let sets2 = (res[1]>res[0]?1:0) + (res[3]>res[2]?1:0) + (res[5]>res[4]?1:0);
-                        
-                        // Games
                         let games1 = (res[0]||0) + (res[2]||0) + (res[4]||0);
                         let games2 = (res[1]||0) + (res[3]||0) + (res[5]||0);
 
                         if (sets1 > sets2) stats[p1].pts++; else stats[p2].pts++;
-                        
-                        // Diferencia Sets
-                        stats[p1].sDiff += (sets1 - sets2);
-                        stats[p2].sDiff += (sets2 - sets1);
-
-                        // Diferencia Games
-                        stats[p1].gDiff += (games1 - games2);
-                        stats[p2].gDiff += (games2 - games1);
-                        
+                        stats[p1].sDiff += (sets1 - sets2); stats[p2].sDiff += (sets2 - sets1);
+                        stats[p1].gDiff += (games1 - games2); stats[p2].gDiff += (games2 - games1);
                         resHtml = `<span class="text-yellow-500 font-black text-[10px] tracking-widest">${res[0]}-${res[1]} ${res[2]}-${res[3]} ${res[4]?'('+res[4]+'-'+res[5]+')':''}</span>`;
                     }
-
-                    return `
-                    <div class="flex flex-col mb-3">
-                        <div class="flex justify-between items-center bg-slate-800/40 p-2 rounded-lg text-[11px] border border-white/5">
-                            <span class="flex-1 text-right pr-2 truncate font-medium">${zona.teams[p1]}</span>
-                            <div class="min-w-[70px] text-center">${resHtml}</div>
-                            <span class="flex-1 text-left pl-2 truncate font-medium">${zona.teams[p2]}</span>
-                        </div>
-                    </div>`;
+                    return `<div class="flex flex-col mb-3"><div class="flex justify-between items-center bg-slate-800/40 p-2 rounded-lg text-[11px] border border-white/5"><span class="flex-1 text-right pr-2 truncate font-medium">${zona.teams[p1]}</span><div class="min-w-[70px] text-center">${resHtml}</div><span class="flex-1 text-left pl-2 truncate font-medium">${zona.teams[p2]}</span></div></div>`;
                 }).join('');
 
-                // Ordenar: PTS > Dif Sets > Dif Games
                 stats.sort((a,b) => b.pts - a.pts || b.sDiff - a.sDiff || b.gDiff - a.gDiff);
-                
                 if (stats.every(s => s.played >= 2)) {
                     clasificados[zona.id + "1"] = stats[0].name;
                     clasificados[zona.id + "2"] = stats[1].name;
                 }
 
-                container.innerHTML += `
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div>
-                            <div class="flex items-baseline gap-2 mb-4">
-                                <h3 class="text-yellow-500 font-black text-xl italic uppercase">Zona ${zona.id}</h3>
-                                <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Cronograma y Resultados</span>
-                            </div>
-                            ${matchesHtml}
-                        </div>
-                        <div class="glass rounded-xl overflow-hidden self-start">
-                            <table class="w-full text-[11px]">
-                                <tr class="bg-slate-800/80 text-slate-400 uppercase text-[9px] tracking-widest">
-                                    <th class="p-3 text-left">Pareja</th>
-                                    <th class="p-3">PTS</th>
-                                    <th class="p-3">DS</th>
-                                    <th class="p-3">DG</th>
-                                </tr>
-                                ${stats.map((s, idx) => `
-                                <tr class="${idx<2?'text-white bg-yellow-500/5':'text-slate-500'}">
-                                    <td class="p-3 border-t border-slate-800 font-semibold">${idx<2?'<span class="text-yellow-500 mr-1">★</span>':''}${s.name}</td>
-                                    <td class="p-3 border-t border-slate-800 text-center font-bold">${s.pts}</td>
-                                    <td class="p-3 border-t border-slate-800 text-center">${s.sDiff > 0 ? '+'+s.sDiff : s.sDiff}</td>
-                                    <td class="p-3 border-t border-slate-800 text-center">${s.gDiff > 0 ? '+'+s.gDiff : s.gDiff}</td>
-                                </tr>`).join('')}
-                            </table>
-                        </div>
-                    </div>`;
+                container.innerHTML += `<div class="grid grid-cols-1 lg:grid-cols-2 gap-8"><div><div class="flex items-baseline gap-2 mb-4"><h3 class="text-yellow-500 font-black text-xl italic uppercase">Zona ${zona.id}</h3></div>${matchesHtml}</div><div class="glass rounded-xl overflow-hidden self-start"><table class="w-full text-[11px]"><tr class="bg-slate-800/80 text-slate-400 uppercase text-[9px] tracking-widest"><th class="p-3 text-left">Pareja</th><th class="p-3">PTS</th><th class="p-3">DS</th><th class="p-3">DG</th></tr>${stats.map((s, idx) => `<tr class="${idx<2?'text-white bg-yellow-500/5':'text-slate-500'}"><td class="p-3 border-t border-slate-800 font-semibold">${idx<2?'<span class="text-yellow-500 mr-1">★</span>':''}${s.name}</td><td class="p-3 border-t border-slate-800 text-center font-bold">${s.pts}</td><td class="p-3 border-t border-slate-800 text-center">${s.sDiff > 0 ? '+'+s.sDiff : s.sDiff}</td><td class="p-3 border-t border-slate-800 text-center">${s.gDiff > 0 ? '+'+s.gDiff : s.gDiff}</td></tr>`).join('')}</table></div></div>`;
             });
-
             renderBracket();
         }
 
         function renderBracket() {
-    const getT = (key) => clasificados[key] || `<span class="text-slate-700 tracking-tighter italic text-[10px]">Esperando ${key}...</span>`;
+            const getT = (key) => clasificados[key] || `<span class="text-slate-700 italic text-[10px]">Esperando ${key}...</span>`;
+            const getW = (id, def) => ganadoresManuales[id] ? `<span class="text-yellow-500 font-bold uppercase">${ganadoresManuales[id]}</span>` : `<span class="text-slate-500 italic text-[10px]">${def}</span>`;
 
-    // Repechajes (HOY)
-    const badgeHoy = `<span class="text-[9px] bg-yellow-500/10 text-yellow-500 px-1.5 py-0.5 rounded font-bold">HOY 21:30hs</span>`;
+            const badgeHoy = `<span class="text-[9px] bg-yellow-500/10 text-yellow-500 px-1.5 py-0.5 rounded font-bold">HOY 21:30hs</span>`;
+            const badgeManana = `<span class="text-[9px] bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded font-bold ml-2">MAÑANA 14:30hs</span>`;
 
-    document.getElementById('slot-8vo-1').innerHTML = `
-        <div class="flex justify-between items-center mb-1">${badgeHoy}</div>
-        <div>${getT('B2')}</div>
-        <div class="h-[1px] bg-slate-800 my-1"></div>
-        <div>${getT('C2')}</div>`;
+            // REPECHAJES
+            document.getElementById('slot-8vo-1').innerHTML = `<div class="mb-1">${badgeHoy}</div><div>${getT('B2')}</div><div class="h-[1px] bg-slate-800 my-1"></div><div>${getT('C2')}</div>`;
+            document.getElementById('slot-8vo-2').innerHTML = `<div class="mb-1">${badgeHoy}</div><div>${getT('D2')}</div><div class="h-[1px] bg-slate-800 my-1"></div><div>${getT('A2')}</div>`;
 
-    document.getElementById('slot-8vo-2').innerHTML = `
-        <div class="flex justify-between items-center mb-1">${badgeHoy}</div>
-        <div>${getT('D2')}</div>
-        <div class="h-[1px] bg-slate-800 my-1"></div>
-        <div>${getT('A2')}</div>`;
+            // CUARTOS
+            document.getElementById('slot-4to-1').innerHTML = `<div class="flex justify-between mb-1"><span class="text-[10px] text-yellow-500 font-bold uppercase italic">Q1</span>${badgeManana}</div><div class="text-xs">${getT('A1')}</div><div class="h-[1px] bg-slate-800 my-1"></div><div class="text-xs">${getW('rep1', 'Ganador Rep 1')}</div>`;
+            document.getElementById('slot-4to-2').innerHTML = `<div class="flex justify-between mb-1"><span class="text-[10px] text-yellow-500 font-bold uppercase italic">Q2</span>${badgeManana}</div><div class="text-xs">${getT('E1')}</div><div class="h-[1px] bg-slate-800 my-1"></div><div class="text-xs">${getT('D1')}</div>`;
+            document.getElementById('slot-4to-3').innerHTML = `<div class="flex justify-between mb-1"><span class="text-[10px] text-yellow-500 font-bold uppercase italic">Q3</span>${badgeManana}</div><div class="text-xs">${getT('C1')}</div><div class="h-[1px] bg-slate-800 my-1"></div><div class="text-xs">${getT('E2')}</div>`;
+            document.getElementById('slot-4to-4').innerHTML = `<div class="flex justify-between mb-1"><span class="text-[10px] text-yellow-500 font-bold uppercase italic">Q4</span>${badgeManana}</div><div class="text-xs">${getT('B1')}</div><div class="h-[1px] bg-slate-800 my-1"></div><div class="text-xs">${getW('rep2', 'Ganador Rep 2')}</div>`;
 
-    // Cuartos de Final (MAÑANA 14:30hs)
-    // Cambiamos el estilo a uno un poco más neutro pero claro
-    const badgeManana = `<span class="text-[9px] bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded font-bold ml-2">MAÑANA 14:30hs</span>`;
+            // SEMIS
+            document.getElementById('slot-semi-1').innerHTML = `<div class="text-[10px] text-slate-500 mb-2 uppercase font-bold">Semi 1</div><div class="text-xs">${getW('cuartos1', 'Ganador Q1')}</div><div class="h-[1px] bg-slate-800 my-1"></div><div class="text-xs">${getW('cuartos2', 'Ganador Q2')}</div>`;
+            document.getElementById('slot-semi-2').innerHTML = `<div class="text-[10px] text-slate-500 mb-2 uppercase font-bold">Semi 2</div><div class="text-xs">${getW('cuartos3', 'Ganador Q3')}</div><div class="h-[1px] bg-slate-800 my-1"></div><div class="text-xs">${getW('cuartos4', 'Ganador Q4')}</div>`;
 
-    document.getElementById('slot-4to-1').innerHTML = `
-        <div class="flex justify-between items-start mb-1">
-            <div class="text-[10px] text-yellow-500 font-bold italic uppercase">1ero A vs Rep 1</div>
-            ${badgeManana}
-        </div>
-        <div class="text-xs">${getT('A1')}</div>
-        <div class="h-[1px] bg-slate-800 my-1"></div>
-        <div class="text-xs text-slate-500 italic">Ganador Repechaje 1</div>`;
+            // FINAL
+            document.getElementById('slot-final').innerHTML = `
+                <div class="text-[10px] text-yellow-500/50 mb-3 uppercase font-black">Partido Final</div>
+                <div class="text-sm font-bold">${getW('semi1', 'Finalista 1')}</div>
+                <div class="text-yellow-500 my-2 text-xl font-black italic">VS</div>
+                <div class="text-sm font-bold mb-4">${getW('semi2', 'Finalista 2')}</div>
+                ${ganadoresManuales.campeon ? `<div class="mt-4 p-2 bg-yellow-500 text-black rounded font-black uppercase text-lg">🏆 ${ganadoresManuales.campeon}</div>` : ''}
+            `;
+        }
 
-    document.getElementById('slot-4to-2').innerHTML = `
-        <div class="flex justify-between items-start mb-1">
-            <div class="text-[10px] text-yellow-500 font-bold italic uppercase">1ero E vs 1ero D</div>
-            ${badgeManana}
-        </div>
-        <div class="text-xs">${getT('E1')}</div>
-        <div class="h-[1px] bg-slate-800 my-1"></div>
-        <div class="text-xs">${getT('D1')}</div>`;
-
-    document.getElementById('slot-4to-3').innerHTML = `
-        <div class="flex justify-between items-start mb-1">
-            <div class="text-[10px] text-yellow-500 font-bold italic uppercase">1ero C vs 2do E</div>
-            ${badgeManana}
-        </div>
-        <div class="text-xs">${getT('C1')}</div>
-        <div class="h-[1px] bg-slate-800 my-1"></div>
-        <div class="text-xs">${getT('E2')}</div>`;
-
-    document.getElementById('slot-4to-4').innerHTML = `
-        <div class="flex justify-between items-start mb-1">
-            <div class="text-[10px] text-yellow-500 font-bold italic uppercase">1ero B vs Rep 2</div>
-            ${badgeManana}
-        </div>
-        <div class="text-xs">${getT('B1')}</div>
-        <div class="h-[1px] bg-slate-800 my-1"></div>
-        <div class="text-xs text-slate-500 italic">Ganador Repechaje 2</div>`;
-
-    document.getElementById('slot-semi-1').innerHTML = `<div class="text-xs text-slate-500 italic text-center">Ganador 4tos (1-2)</div>`;
-    document.getElementById('slot-semi-2').innerHTML = `<div class="text-xs text-slate-500 italic text-center">Ganador 4tos (3-4)</div>`;
-}
         logic();
     </script>
 </body>
